@@ -1,16 +1,17 @@
-const GITHUB_REPO = 'mahmoudelsheikh7/gweb';
-const BRANCH = 'media'; // تأكد من أن الفرع صحيح
-
+// تأكد من أن الدالة async
 async function fetchMedia() {
+    const GITHUB_REPO = 'mahmoudelsheikh7/gweb';
+    const BRANCH = 'media';
+
     const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/media?ref=${BRANCH}`;
     try {
         const response = await fetch(url, {
             headers: {
-                'Authorization': 'Bearer YOUR_TOKEN_HERE' // استبدل YOUR_TOKEN_HERE برمزك
+                'Authorization': 'Bearer YOUR_TOKEN_HERE' // استبدل YOUR_TOKEN_HERE برمزك إذا لزم الأمر
             }
         });
         if (!response.ok) {
-            throw new Error('خطأ في جلب الملفات: ' + response.status);
+            throw new Error('خطأ في جلب الملفات: ' + response.status + ' - ' + response.statusText);
         }
         const files = await response.json();
         const gallery = document.getElementById('media-gallery');
@@ -58,25 +59,11 @@ async function fetchMedia() {
     } catch (error) {
         console.error('خطأ:', error);
         const gallery = document.getElementById('media-gallery');
-        gallery.innerHTML = '<p>تعذر تحميل الملفات. تحقق من الاتصال أو المستودع.</p>';
+        gallery.innerHTML = '<p>تعذر تحميل الملفات. الخطأ: ' + error.message + '</p>';
     }
 }
 
-// استدعاء الدالة لجلب الملفات عند تحميل الصفحة
-window.onload = fetchMedia;
-try {
-    const response = await fetch(url, {
-        headers: {
-            'Authorization': 'Bearer YOUR_TOKEN_HERE' // إذا ضروري
-        }
-    });
-    if (!response.ok) {
-        throw new Error(`خطأ: ${response.status} - ${response.statusText}`);
-    }
-    const files = await response.json();
-    // ... الشفرة الأخرى
-} catch (error) {
-    console.error('خطأ مفصل:', error.message);
-    const gallery = document.getElementById('media-gallery');
-    gallery.innerHTML = `<p>تعذر تحميل الملفات. الخطأ: ${error.message}</p>`;
-}
+// استدعاء الدالة باستخدام async/await
+document.addEventListener('DOMContentLoaded', async () => {
+    await fetchMedia();
+});
