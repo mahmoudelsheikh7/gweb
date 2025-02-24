@@ -1,7 +1,7 @@
 // تعريف المعلومات الأساسية للمستودع
 const GITHUB_REPO = 'mahmoudelsheikh7/gweb';
-const BRANCH = 'media'; // الفرع الذي يحتوي على الملفات
-const MEDIA_FOLDER = 'media'; // مجلد الوسائط (يمكن تغييره حسب الحاجة)
+const BRANCH = 'main'; // الفرع الذي يحتوي على الملفات (كما هو ظاهر في الصورة)
+const MEDIA_FOLDER = ''; // الجذر (Root) لأن الملفات موجودة مباشرة في الجذر
 
 async function fetchMedia() {
     const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/${MEDIA_FOLDER}?ref=${BRANCH}`;
