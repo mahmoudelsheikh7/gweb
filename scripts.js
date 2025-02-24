@@ -9,7 +9,7 @@ async function fetchMedia() {
         // استخدام Personal Access Token لتجنب Rate Limiting
         const response = await fetch(url, {
             headers: {
-                'Authorization': 'Bearer ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' // استبدل بالـ Token الخاص بك
+                'Authorization': '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' // استبدل بالـ Token الخاص بك
             }
         });
         if (!response.ok) {
