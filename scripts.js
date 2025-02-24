@@ -1,58 +1,26 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // تحميل المعرض ديناميكيًا
-    fetch('get_media.php')
-        .then(response => response.json())
-        .then(data => {
-            const gallery = document.getElementById('media-gallery');
-            data.forEach(item => {
-                if (item.type === 'image') {
-                    gallery.innerHTML += `<a href="${item.url}" class="gallery-item"><img src="${item.url}" alt="${item.name}" data-aos="fade-up"></a>`;
-                } else {
-                    gallery.innerHTML += `
-                        <a href="${item.url}" class="gallery-item" data-video='{"source": [{"src": "${item.url}", "type": "video/mp4"}], "attributes": {"preload": false, "controls": true}}'>
-                            <video src="${item.url}" muted preload="metadata" data-aos="fade-up"></video>
-                        </a>`;
-                }
-            });
+const GITHUB_REPO = 'username/repo'; // استبدل 'username/repo' باسم المستخدم واسم المستودع الخاص بك
+const BRANCH = 'main'; // استبدل 'main' باسم الفرع الذي تريد استدعاء الملفات منه
 
-            // تفعيل LightGallery مع دعم الفيديوهات
-            const lg = lightGallery(document.getElementById('media-gallery'), {
-                speed: 500,
-                download: true,
-                counter: true,
-                zoom: true,
-                scale: 1,
-                video: true,
-                autoplay: true, // تشغيل الفيديو تلقائيًا عند فتحه
-                plugins: [lgVideo]
-            });
+async function fetchMedia() {
+    const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/media?ref=${BRANCH}`; // تأكد من أن لديك مجلد باسم 'media' في المستودع
+    const response = await fetch(url);
+    const files = await response.json();
+    const gallery = document.getElementById('media-gallery');
+    
+    files.forEach(file => {
+        if (file.type === 'file') {
+            const mediaElement = document.createElement(file.name.endsWith('.mp4') ? 'video' : 'img');
+            mediaElement.classList.add('gallery-item');
 
-            // تشغيل الفيديو عند التمرير فوقه
-            document.querySelectorAll('.gallery video').forEach(video => {
-                video.addEventListener('mouseenter', () => video.play());
-                video.addEventListener('mouseleave', () => video.pause());
-            });
-
-            // إضافة تأثيرات AOS (اختياري)
-            if (typeof AOS !== 'undefined') {
-                AOS.init({ duration: 1000 });
+            mediaElement.src = file.download_url;
+            if (file.name.endsWith('.mp4')) {
+                mediaElement.controls = true;
             }
-        });
 
-    // تحسين السرعة باستخدام Intersection Observer
-    const lazyLoad = new IntersectionObserver((entries, observer) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const media = entry.target;
-                media.src = media.dataset.src;
-                observer.unobserve(media);
-            }
-        });
+            gallery.appendChild(mediaElement);
+        }
     });
+}
 
-    document.querySelectorAll('img, video').forEach(media => {
-        media.dataset.src = media.src;
-        media.src = '';
-        lazyLoad.observe(media);
-    });
-});
+// استدعاء الدالة لجلب الملفات عند تحميل الصفحة
+window.onload = fetchMedia;
