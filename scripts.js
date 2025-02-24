@@ -1,10 +1,14 @@
 const GITHUB_REPO = 'mahmoudelsheikh7/gweb';
-const BRANCH = 'media'; // تحديث إلى فرع 'media' كما هو ظاهر في الصورة
+const BRANCH = 'media'; // تأكد من أن الفرع صحيح
 
 async function fetchMedia() {
     const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/media?ref=${BRANCH}`;
     try {
-        const response = await fetch(url);
+        const response = await fetch(url, {
+            headers: {
+                'Authorization': 'Bearer YOUR_TOKEN_HERE' // استبدل YOUR_TOKEN_HERE برمزك
+            }
+        });
         if (!response.ok) {
             throw new Error('خطأ في جلب الملفات: ' + response.status);
         }
@@ -60,3 +64,19 @@ async function fetchMedia() {
 
 // استدعاء الدالة لجلب الملفات عند تحميل الصفحة
 window.onload = fetchMedia;
+try {
+    const response = await fetch(url, {
+        headers: {
+            'Authorization': 'Bearer YOUR_TOKEN_HERE' // إذا ضروري
+        }
+    });
+    if (!response.ok) {
+        throw new Error(`خطأ: ${response.status} - ${response.statusText}`);
+    }
+    const files = await response.json();
+    // ... الشفرة الأخرى
+} catch (error) {
+    console.error('خطأ مفصل:', error.message);
+    const gallery = document.getElementById('media-gallery');
+    gallery.innerHTML = `<p>تعذر تحميل الملفات. الخطأ: ${error.message}</p>`;
+}
