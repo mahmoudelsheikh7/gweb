@@ -1,13 +1,15 @@
-// تأكد من أن الدالة async
-async function fetchMedia() {
-    const GITHUB_REPO = 'mahmoudelsheikh7/gweb';
-    const BRANCH = 'media';
+// تعريف المعلومات الأساسية للمستودع
+const GITHUB_REPO = 'mahmoudelsheikh7/gweb';
+const BRANCH = 'media'; // الفرع الذي يحتوي على الملفات
+const MEDIA_FOLDER = 'media'; // مجلد الوسائط (يمكن تغييره حسب الحاجة)
 
-    const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/media?ref=${BRANCH}`;
+async function fetchMedia() {
+    const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/${MEDIA_FOLDER}?ref=${BRANCH}`;
     try {
+        // استخدام Personal Access Token لتجنب Rate Limiting
         const response = await fetch(url, {
             headers: {
-                'Authorization': 'Bearer YOUR_TOKEN_HERE' // استبدل YOUR_TOKEN_HERE برمزك إذا لزم الأمر
+                'Authorization': 'Bearer ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' // استبدل بالـ Token الخاص بك
             }
         });
         if (!response.ok) {
@@ -18,7 +20,7 @@ async function fetchMedia() {
         gallery.innerHTML = ''; // تفريغ المعرض قبل التحميل
 
         files.forEach(file => {
-            if (file.type === 'file' && (file.name.endsWith('.jpg') || file.name.endsWith('.png') || file.name.endsWith('.mp4'))) {
+            if (file.type === 'file' && (file.name.endsWith('.jpg') || file.name.endsWith('.png') || file.name.endsWith('.jpeg') || file.name.endsWith('.gif') || file.name.endsWith('.mp4'))) {
                 const link = document.createElement('a');
                 link.href = file.download_url;
                 link.classList.add('gallery-item');
@@ -27,7 +29,7 @@ async function fetchMedia() {
                     const video = document.createElement('video');
                     video.src = file.download_url;
                     video.controls = true;
-                    video.muted = true;
+                    video.muted = true; // لتجنب مشاكل التشغيل التلقائي
                     video.preload = 'metadata';
                     link.dataset.video = JSON.stringify({
                         source: [{ src: file.download_url, type: 'video/mp4' }],
@@ -46,16 +48,20 @@ async function fetchMedia() {
         });
 
         // تفعيل LightGallery بعد تحميل العناصر
-        lightGallery(document.getElementById('media-gallery'), {
-            speed: 500,
-            download: true,
-            counter: true,
-            zoom: true,
-            scale: 1,
-            video: true,
-            autoplay: true,
-            plugins: [lgVideo]
-        });
+        if (typeof lightGallery !== 'undefined') {
+            lightGallery(document.getElementById('media-gallery'), {
+                speed: 500,
+                download: true,
+                counter: true,
+                zoom: true,
+                scale: 1,
+                video: true,
+                autoplay: true,
+                plugins: [lgVideo]
+            });
+        } else {
+            console.error('LightGallery لم يتم تحميله بشكل صحيح.');
+        }
     } catch (error) {
         console.error('خطأ:', error);
         const gallery = document.getElementById('media-gallery');
@@ -63,7 +69,7 @@ async function fetchMedia() {
     }
 }
 
-// استدعاء الدالة باستخدام async/await
+// استدعاء الدالة باستخدام async/await عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', async () => {
     await fetchMedia();
 });
