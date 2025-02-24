@@ -1,8 +1,8 @@
-const GITHUB_REPO = 'mahmoudelsheikh7/gweb'; // استبدل بمعلوماتك إذا لزم الأمر
-const BRANCH = 'main'; // تأكد من اسم الفرع الصحيح (قد يكون 'uploads' إذا كان الفرع مختلفًا)
+const GITHUB_REPO = 'mahmoudelsheikh7/gweb';
+const BRANCH = 'media'; // تحديث إلى فرع 'media' كما هو ظاهر في الصورة
 
 async function fetchMedia() {
-    const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/media?ref=${BRANCH}`; // تحديث المسار إلى 'uploads'
+    const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/media?ref=${BRANCH}`;
     try {
         const response = await fetch(url);
         if (!response.ok) {
@@ -14,18 +14,42 @@ async function fetchMedia() {
 
         files.forEach(file => {
             if (file.type === 'file' && (file.name.endsWith('.jpg') || file.name.endsWith('.png') || file.name.endsWith('.mp4'))) {
-                const mediaElement = document.createElement(file.name.endsWith('.mp4') ? 'video' : 'img');
-                mediaElement.classList.add('gallery-item');
+                const link = document.createElement('a');
+                link.href = file.download_url;
+                link.classList.add('gallery-item');
 
-                mediaElement.src = file.download_url;
                 if (file.name.endsWith('.mp4')) {
-                    mediaElement.controls = true;
-                    mediaElement.muted = true; // لتجنب مشاكل التشغيل التلقائي
-                    mediaElement.preload = 'metadata';
+                    const video = document.createElement('video');
+                    video.src = file.download_url;
+                    video.controls = true;
+                    video.muted = true;
+                    video.preload = 'metadata';
+                    link.dataset.video = JSON.stringify({
+                        source: [{ src: file.download_url, type: 'video/mp4' }],
+                        attributes: { controls: true, preload: false }
+                    });
+                    link.appendChild(video);
+                } else {
+                    const img = document.createElement('img');
+                    img.src = file.download_url;
+                    img.alt = file.name;
+                    link.appendChild(img);
                 }
 
-                gallery.appendChild(mediaElement);
+                gallery.appendChild(link);
             }
+        });
+
+        // تفعيل LightGallery بعد تحميل العناصر
+        lightGallery(document.getElementById('media-gallery'), {
+            speed: 500,
+            download: true,
+            counter: true,
+            zoom: true,
+            scale: 1,
+            video: true,
+            autoplay: true,
+            plugins: [lgVideo]
         });
     } catch (error) {
         console.error('خطأ:', error);
