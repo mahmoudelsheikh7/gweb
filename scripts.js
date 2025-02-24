@@ -1,8 +1,8 @@
-const GITHUB_REPO = 'username/repo'; // استبدل 'username/repo' باسم المستخدم واسم المستودع الخاص بك
-const BRANCH = 'main'; // استبدل 'main' باسم الفرع الذي تريد استدعاء الملفات منه
+const GITHUB_REPO = 'mahmoudelsheikh7/gweb'; 
+const BRANCH = 'uploads'; 
 
 async function fetchMedia() {
-    const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/media?ref=${BRANCH}`; // تأكد من أن لديك مجلد باسم 'media' في المستودع
+    const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/upload?ref=${BRANCH}`; // تأكد من أن لديك مجلد باسم 'media' في المستودع
     const response = await fetch(url);
     const files = await response.json();
     const gallery = document.getElementById('media-gallery');
