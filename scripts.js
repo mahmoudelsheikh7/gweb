@@ -2,7 +2,7 @@ const GITHUB_REPO = 'mahmoudelsheikh7/gweb'; // استبدل بمعلوماتك 
 const BRANCH = 'main'; // تأكد من اسم الفرع الصحيح (قد يكون 'uploads' إذا كان الفرع مختلفًا)
 
 async function fetchMedia() {
-    const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/uploads?ref=${BRANCH}`; // تحديث المسار إلى 'uploads'
+    const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/media?ref=${BRANCH}`; // تحديث المسار إلى 'uploads'
     try {
         const response = await fetch(url);
         if (!response.ok) {
