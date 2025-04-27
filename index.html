@@ -4,7 +4,57 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>M4S Gallery</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
+    .zoom-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.74);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      cursor: zoom-out;
+    }
+
+    .zoomed-image {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 10px;
+      transform: scale(0.8);
+      transition: transform 0.3s ease;
+    }
+
+    .zoomed-image.active {
+      transform: scale(1);
+    }
+
+    /* تعديل الأيقونات */
+    .social-icons a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+      margin: 0 10px;
+    }
+
+    .social-icons a i {
+      font-size: 1.5rem;
+    }
+
+    .social-icons a:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-3px);
+    }
+
+    /* بقية التنسيقات كما هي */
     * {
       margin: 0;
       padding: 0;
@@ -13,21 +63,32 @@
     }
 
     body {
-      background: linear-gradient(135deg, #000000, #1c1c1c);
-      color: white;
+      background: linear-gradient(135deg, #000000b0, #1c1c1c82);
+      color: rgba(255, 255, 255, 0.227);
       overflow-x: hidden;
       min-height: 100vh;
       position: relative;
     }
 
-    #bg-canvas {
-      position: fixed;
+    .stars {
+      position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
+      background: url('https://www.transparenttextures.com/patterns/black-linen.png');
       z-index: -1;
-      background: radial-gradient(circle, rgba(0,0,0,0.9) 0%, rgba(0,0,0,1) 100%);
+      pointer-events: none;
+      animation: moveStars 80s linear infinite;
+    }
+
+    @keyframes moveStars {
+      0% {
+        transform: translateX(0);
+      }
+      100% {
+        transform: translateX(-100%);
+      }
     }
 
     .hero {
@@ -40,8 +101,6 @@
       text-align: center;
       padding: 20px;
       animation: fadeIn 2s ease;
-      z-index: 1;
-      position: relative;
     }
 
     @keyframes fadeIn {
@@ -53,7 +112,7 @@
       font-size: 4rem;
       margin-bottom: 20px;
       letter-spacing: 2px;
-      text-shadow: 0 0 10px rgba(255,255,255,0.2);
+      text-shadow: 0 0 10px rgba(95, 12, 12, 0.2);
     }
 
     .hero p#daily-quote {
@@ -72,9 +131,9 @@
 
     .buttons button {
       background: rgba(255,255,255,0.1);
-      border: 2px solid white;
+      border: 2px solid rgb(83, 80, 80);
       padding: 12px 25px;
-      color: white;
+      color: rgba(255, 255, 255, 0.662);
       cursor: pointer;
       font-size: 1rem;
       border-radius: 50px;
@@ -83,7 +142,7 @@
     }
 
     .buttons button:hover {
-      background: white;
+      background: rgb(65, 64, 64);
       color: black;
       transform: scale(1.1);
     }
@@ -114,6 +173,7 @@
       transition: border-color 0.5s, transform 0.5s;
       background: rgba(255,255,255,0.05);
       backdrop-filter: blur(3px);
+      cursor: zoom-in;
     }
 
     .media-item:hover {
@@ -127,6 +187,21 @@
       display: block;
     }
 
+    #loader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      z-index: 9999;
+      display: none;
+    }
+
     footer {
       margin-top: 50px;
       text-align: center;
@@ -135,7 +210,7 @@
     }
 
     footer a {
-      color: white;
+      color: rgb(18, 17, 17);
       margin: 0 12px;
       font-size: 1.7rem;
       text-decoration: none;
@@ -143,97 +218,158 @@
     }
 
     footer a:hover {
-      color: #ccc;
+      color: #e3e0e016;
     }
+
+    /*.magic-effect {
+      position: absolute;
+      border-radius: 0%;
+      background: rgba(47, 40, 40, 0.463);
+      pointer-events: none;
+      animation: pulse 2s infinite;
+      z-index: 10;
+    }/*/
+
+    @keyframes pulse {
+      0% {
+        transform: scale(0);
+        opacity: 0.8;
+      }
+      50% {
+        transform: scale(1.5);
+        opacity: 0.3;
+      }
+      100% {
+        transform: scale(0);
+        opacity: 0;
+      }
+    }
+
   </style>
 </head>
 <body>
 
-  <canvas id="bg-canvas"></canvas>
+  <!-- إضافة عنصر التكبير -->
+  <div class="zoom-overlay" id="zoomOverlay">
+    <img class="zoomed-image" id="zoomedImage" alt="الصورة المكبّرة">
+  </div>
+
+  <div class="stars"></div>
+  <div id="loader"> Loading...</div>
 
   <div class="hero">
     <h1>M4S</h1>
-    <p id="daily-quote">جملة اليوم...</p>
+    <p id="daily-quote">Quotes...</p>
     <div class="buttons">
-      <button onclick="showSection('photos')">📸 عرض الصور</button>
-      <button onclick="showSection('videos')">🎥 عرض الفيديوهات</button>
+      <button onclick="showSection('photos')">📸 Photos </button>
+      <button onclick="showSection('videos')">🎥  Videos </button>
+    </div>
+
+    <!-- تعديل الأيقونات -->
+    <div class="social-icons">
+      <a href="https://github.com/mahmoudelsheikh7" target="_blank"><i class="fab fa-github"></i></a>
+      <a href="https://instagram.com/mahmoudelsheikh7" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a href="https://twitter.com/mahmoudelsheikh7" target="_blank"><i class="fab fa-twitter"></i></a>
+      <a href="https://linkedin.com/in/mahmoudelsheikh7" target="_blank"><i class="fab fa-linkedin"></i></a>
     </div>
   </div>
 
   <section id="photos">
-    <h2>📸 معرض الصور</h2>
-    <div class="media-container" id="photo-gallery"></div>
+    <h2>📸 Photos </h2>
+    <div class="media-container" id="gallery"></div>
   </section>
 
   <section id="videos">
-    <h2>🎥 معرض الفيديوهات</h2>
+    <h2>🎥 Videos</h2>
     <div class="media-container" id="video-gallery"></div>
   </section>
 
   <footer>
-    <a href="#">GitHub</a>
-    <a href="#">Instagram</a>
-    <a href="#">Twitter</a>
-    <a href="#">LinkedIn</a>
+    <a href="https://github.com/mahmoudelsheikh7" target="_blank"><i class="fab fa-github"></i></a>
   </footer>
 
   <script>
+    // إضافة وظيفة التكبير
+    function initZoom() {
+      const mediaItems = document.querySelectorAll('.media-item img');
+      const zoomOverlay = document.getElementById('zoomOverlay');
+      const zoomedImage = document.getElementById('zoomedImage');
+
+      mediaItems.forEach(item => {
+        item.addEventListener('click', () => {
+          zoomedImage.src = item.src;
+          zoomOverlay.style.display = 'flex';
+          setTimeout(() => zoomedImage.classList.add('active'), 10);
+        });
+      });
+
+      zoomOverlay.addEventListener('click', () => {
+        zoomedImage.classList.remove('active');
+        setTimeout(() => {
+          zoomOverlay.style.display = 'none';
+        }, 300);
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          zoomOverlay.click();
+        }
+      });
+    }
+
+    // تعديل وظيفة تحميل الصور
+    async function loadRepoImages() {
+      try {
+        const repoUrl = 'https://api.github.com/repos/mahmoudelsheikh7/gweb/contents/images';
+        const response = await fetch(repoUrl);
+        
+        if (!response.ok) throw new Error('Failed to fetch images');
+        
+        const data = await response.json();
+        const imageFiles = data.filter(file => 
+          file.name.match(/\.(jpg|jpeg|png|gif|png|PNG)$/i)
+        );
+
+        const gallery = document.getElementById('gallery');
+        gallery.innerHTML = imageFiles.map(file => `
+          <div class="media-item">
+            <img 
+              src="${file.download_url}" 
+              class="gallery-image" 
+              loading="lazy" 
+              alt="${file.name}"
+            >
+          </div>
+        `).join('');
+        
+        initZoom(); // تهيئة خاصية التكبير بعد تحميل الصور
+      } catch (error) {
+        console.error('Error loading images:', error);
+        alert('حدث خطأ في تحميل الصور، يرجى المحاولة لاحقًا');
+      } finally {
+        loader.style.display = 'none';
+      }
+    }
+
+    // بقية الدوال كما هي
+    document.body.addEventListener('mousemove', (e) => {
+      const magicCircle = document.createElement('div');
+      magicCircle.classList.add('magic-effect');
+      magicCircle.style.width = '100px';
+      magicCircle.style.height = '100px';
+      magicCircle.style.left = `${e.pageX - 50}px`;
+      magicCircle.style.top = `${e.pageY - 50}px`;
+      document.body.appendChild(magicCircle);
+
+      setTimeout(() => {
+        magicCircle.remove();
+      }, 2000);
+    });
+
     function showSection(id) {
       document.querySelectorAll('section').forEach(sec => sec.classList.remove('active'));
       document.getElementById(id).classList.add('active');
       window.scrollTo(0, document.getElementById(id).offsetTop);
-    }
-
-    const photoGallery = document.getElementById('photo-gallery');
-    const videoGallery = document.getElementById('video-gallery');
-
-    const photoFiles = ['photo1.jpg', 'photo2.jpg', 'photo3.jpg'];
-    const videoFiles = ['video1.mp4', 'video2.mp4'];
-
-    photoFiles.forEach(file => {
-      const div = document.createElement('div');
-      div.className = 'media-item';
-      const img = document.createElement('img');
-      img.src = `/gweb/images/${file}`;
-      img.onload = function() {
-        const color = getAverageColor(img);
-        div.style.borderColor = color;
-      };
-      div.appendChild(img);
-      photoGallery.appendChild(div);
-    });
-
-    videoFiles.forEach(file => {
-      const div = document.createElement('div');
-      div.className = 'media-item';
-      const video = document.createElement('video');
-      video.src = `/gweb/videos/${file}`;
-      video.controls = true;
-      div.appendChild(video);
-      videoGallery.appendChild(div);
-    });
-
-    function getAverageColor(img) {
-      const canvas = document.createElement('canvas');
-      const context = canvas.getContext('2d');
-      canvas.width = img.naturalWidth;
-      canvas.height = img.naturalHeight;
-      context.drawImage(img, 0, 0);
-
-      const data = context.getImageData(0, 0, canvas.width, canvas.height).data;
-      let r = 0, g = 0, b = 0;
-
-      for (let i = 0; i < data.length; i += 4) {
-        r += data[i];
-        g += data[i + 1];
-        b += data[i + 2];
-      }
-
-      r = Math.floor(r / (data.length / 4));
-      g = Math.floor(g / (data.length / 4));
-      b = Math.floor(b / (data.length / 4));
-
-      return `rgb(${r},${g},${b})`;
     }
 
     async function loadDailyQuote() {
@@ -249,73 +385,9 @@
     }
     loadDailyQuote();
 
-    // تأثير الخلفية السحرية الضبابية
-    const canvasBG = document.getElementById('bg-canvas');
-    const ctx = canvasBG.getContext('2d');
-    let width, height, particles = [];
-
-    function resizeCanvas() {
-      width = window.innerWidth;
-      height = window.innerHeight;
-      canvasBG.width = width;
-      canvasBG.height = height;
-    }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-
-    const mouse = { x: width / 2, y: height / 2 };
-    window.addEventListener('mousemove', (e) => {
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
-    });
-
-    class Particle {
-      constructor() {
-        this.reset();
-      }
-      reset() {
-        this.x = Math.random() * width;
-        this.y = Math.random() * height;
-        this.size = Math.random() * 2 + 1;
-        this.speedX = (Math.random() - 0.5) * 0.5;
-        this.speedY = (Math.random() - 0.5) * 0.5;
-      }
-      update() {
-        this.x += this.speedX;
-        this.y += this.speedY;
-        if (this.x < 0 || this.x > width || this.y < 0 || this.y > height) {
-          this.reset();
-        }
-      }
-      draw() {
-        const distance = Math.hypot(this.x - mouse.x, this.y - mouse.y);
-        const opacity = Math.max(0, 1 - distance / 200);
-        ctx.fillStyle = `rgba(255,255,255,${opacity * 0.2})`;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
-
-    function initParticles(num) {
-      particles = [];
-      for (let i = 0; i < num; i++) {
-        particles.push(new Particle());
-      }
-    }
-
-    function animateParticles() {
-      ctx.clearRect(0, 0, width, height);
-      particles.forEach(p => {
-        p.update();
-        p.draw();
-      });
-      requestAnimationFrame(animateParticles);
-    }
-
-    initParticles(100);
-    animateParticles();
+    const loader = document.getElementById('loader');
+    loader.style.display = 'flex';
+    window.addEventListener('DOMContentLoaded', loadRepoImages);
   </script>
-
 </body>
 </html>
