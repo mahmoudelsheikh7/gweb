@@ -17,6 +17,17 @@
       color: white;
       overflow-x: hidden;
       min-height: 100vh;
+      position: relative;
+    }
+
+    #bg-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      background: radial-gradient(circle, rgba(0,0,0,0.9) 0%, rgba(0,0,0,1) 100%);
     }
 
     .hero {
@@ -29,6 +40,8 @@
       text-align: center;
       padding: 20px;
       animation: fadeIn 2s ease;
+      z-index: 1;
+      position: relative;
     }
 
     @keyframes fadeIn {
@@ -136,22 +149,24 @@
 </head>
 <body>
 
+  <canvas id="bg-canvas"></canvas>
+
   <div class="hero">
     <h1>M4S</h1>
-    <p id="daily-quote">quote</p>
+    <p id="daily-quote">جملة اليوم...</p>
     <div class="buttons">
-      <button onclick="showSection('photos')">📸 Photos</button>
-      <button onclick="showSection('videos')">🎥  Videos</button>
+      <button onclick="showSection('photos')">📸 عرض الصور</button>
+      <button onclick="showSection('videos')">🎥 عرض الفيديوهات</button>
     </div>
   </div>
 
   <section id="photos">
-    <h2>📸 Photos</h2>
+    <h2>📸 معرض الصور</h2>
     <div class="media-container" id="photo-gallery"></div>
   </section>
 
   <section id="videos">
-    <h2>🎥 Videos</h2>
+    <h2>🎥 معرض الفيديوهات</h2>
     <div class="media-container" id="video-gallery"></div>
   </section>
 
@@ -234,6 +249,73 @@
     }
     loadDailyQuote();
 
+    // تأثير الخلفية السحرية الضبابية
+    const canvasBG = document.getElementById('bg-canvas');
+    const ctx = canvasBG.getContext('2d');
+    let width, height, particles = [];
+
+    function resizeCanvas() {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvasBG.width = width;
+      canvasBG.height = height;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    const mouse = { x: width / 2, y: height / 2 };
+    window.addEventListener('mousemove', (e) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    });
+
+    class Particle {
+      constructor() {
+        this.reset();
+      }
+      reset() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * height;
+        this.size = Math.random() * 2 + 1;
+        this.speedX = (Math.random() - 0.5) * 0.5;
+        this.speedY = (Math.random() - 0.5) * 0.5;
+      }
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        if (this.x < 0 || this.x > width || this.y < 0 || this.y > height) {
+          this.reset();
+        }
+      }
+      draw() {
+        const distance = Math.hypot(this.x - mouse.x, this.y - mouse.y);
+        const opacity = Math.max(0, 1 - distance / 200);
+        ctx.fillStyle = `rgba(255,255,255,${opacity * 0.2})`;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function initParticles(num) {
+      particles = [];
+      for (let i = 0; i < num; i++) {
+        particles.push(new Particle());
+      }
+    }
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, width, height);
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+      requestAnimationFrame(animateParticles);
+    }
+
+    initParticles(100);
+    animateParticles();
   </script>
+
 </body>
 </html>
